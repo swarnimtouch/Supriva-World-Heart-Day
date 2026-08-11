@@ -54,8 +54,8 @@ class DoctorBannerService
         array $logContext
     ): ?string {
         $templateName = match (strtolower(trim((string) $gender))) {
-            'male' => 'male-template.jpg',
-            'female' => 'female-template.jpg',
+            'male' => 'male-template.png',
+            'female' => 'female-template.png',
             default => null,
         };
 
@@ -74,7 +74,7 @@ class DoctorBannerService
                 throw new RuntimeException("Banner template not found: {$templateName}");
             }
 
-            $template = imagecreatefromjpeg($templatePath);
+            $template = imagecreatefrompng($templatePath);
 
             if (!$template) {
                 throw new RuntimeException('The banner template could not be read.');
@@ -126,10 +126,21 @@ class DoctorBannerService
         $name = $this->fitText($doctorName, $nameFont, 70, 1800);
         $speciality = $this->fitText($doctorSpeciality ?: 'Doctor', $specialityFont, 55, 1800);
 
-        imagettftext($banner, 70, 0, 363, 2123, $shadow, $nameFont, $name);
-        imagettftext($banner, 70, 0, 360, 2120, $white, $nameFont, $name);
-        imagettftext($banner, 55, 0, 362, 2242, $shadow, $specialityFont, $speciality);
-        imagettftext($banner, 55, 0, 360, 2240, $white, $specialityFont, $speciality);
+        $nameX = $this->centeredX($name, $nameFont, 70, 0, 1860);
+        $specialityX = $this->centeredX($speciality, $specialityFont, 55, 0, 1860);
+
+        imagettftext($banner, 70, 0, $nameX + 3, 2433, $shadow, $nameFont, $name);
+        imagettftext($banner, 70, 0, $nameX, 2430, $white, $nameFont, $name);
+        imagettftext($banner, 55, 0, $specialityX + 3, 2533, $shadow, $specialityFont, $speciality);
+        imagettftext($banner, 55, 0, $specialityX, 2530, $white, $specialityFont, $speciality);
+    }
+
+    private function centeredX(string $text, string $font, int $fontSize, int $startX, int $endX): int
+    {
+        $box = imagettfbbox($fontSize, 0, $font, $text);
+        $width = $box[2] - $box[0];
+
+        return (int) round($startX + (($endX - $startX - $width) / 2) - $box[0]);
     }
 
     private function fitText(string $text, string $font, int $fontSize, int $maxWidth): string

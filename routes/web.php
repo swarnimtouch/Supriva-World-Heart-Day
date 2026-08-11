@@ -40,11 +40,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->name('doctors.download-photos');
     Route::get('/world-heart-day', [WorldHeartDayController::class, 'index'])->name('world-heart-day.index');
     Route::post('/world-heart-day/import', [WorldHeartDayController::class, 'import'])->name('world-heart-day.import');
-    Route::post('/world-heart-day/regenerate-banners', [WorldHeartDayController::class, 'regenerateBanners'])
-        ->name('world-heart-day.regenerate-banners');
+    Route::get('/world-heart-day/export', [WorldHeartDayController::class, 'export'])->name('world-heart-day.export');
+    Route::get('/world-heart-day/download-banners', [WorldHeartDayController::class, 'downloadBanners'])
+        ->name('world-heart-day.download-banners');
     Route::post('/world-heart-day/{entry}/gender', [WorldHeartDayController::class, 'updateGender'])
         ->name('world-heart-day.gender');
-    Route::post('/world-heart-day/{entry}/banner', [WorldHeartDayController::class, 'generateBanner'])
-        ->name('world-heart-day.banner');
-
+    Route::delete('/world-heart-day/{entry}/banner', [WorldHeartDayController::class, 'deleteBanner'])
+        ->name('world-heart-day.banner.delete');
 });

@@ -121,18 +121,21 @@ class DoctorBannerService
         if (!is_file($nameFont) || !is_file($specialityFont)) {
             throw new RuntimeException('Banner fonts are missing.');
         }
-        $white = imagecolorallocate($banner, 255, 255, 255);
-        $shadow = imagecolorallocatealpha($banner, 0, 0, 0, 55);
-        $name = $this->fitText($doctorName, $nameFont, 70, 1800);
+        $black = imagecolorallocate($banner, 0, 0, 0);
+        $name = $this->fitText($this->doctorNameWithPrefix($doctorName), $nameFont, 70, 1800);
         $speciality = $this->fitText($doctorSpeciality ?: 'Doctor', $specialityFont, 55, 1800);
 
         $nameX = $this->centeredX($name, $nameFont, 70, 0, 1860);
         $specialityX = $this->centeredX($speciality, $specialityFont, 55, 0, 1860);
 
-        imagettftext($banner, 70, 0, $nameX + 3, 2433, $shadow, $nameFont, $name);
-        imagettftext($banner, 70, 0, $nameX, 2430, $white, $nameFont, $name);
-        imagettftext($banner, 55, 0, $specialityX + 3, 2533, $shadow, $specialityFont, $speciality);
-        imagettftext($banner, 55, 0, $specialityX, 2530, $white, $specialityFont, $speciality);
+        imagettftext($banner, 70, 0, $nameX, 2470, $black, $nameFont, $name);
+        imagettftext($banner, 55, 0, $specialityX, 2570, $black, $specialityFont, $speciality);
+    }
+
+    private function doctorNameWithPrefix(string $doctorName): string
+    {
+        $name = trim($doctorName);
+        return preg_match('/^dr\.?\s+/i', $name) ? $name : 'Dr. ' . $name;
     }
 
     private function centeredX(string $text, string $font, int $fontSize, int $startX, int $endX): int

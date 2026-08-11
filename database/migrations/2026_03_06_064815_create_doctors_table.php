@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('speciality')->nullable();
             $table->string('hospital_name')->nullable();
             $table->string('photo')->nullable();
-            $table->string('msl_number')->nullable()->after('doctor_name');
-            $table->date('birth_date')->nullable()->after('hospital_name');
+            $table->string('msl_code')->nullable();
+            $table->date('birth_date')->nullable();
 
 
             $table->timestamps();

@@ -4,14 +4,10 @@
 
 @push('styles')
 <style>
-    .whd-actions,.whd-search{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
-    .whd-actions form,.whd-search{margin:0}.whd-file,.whd-input,.whd-select{padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text)}
-    .whd-search-box{position:relative;min-width:280px;flex:1}.whd-search-box i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}.whd-search-box .whd-input{width:100%;padding-left:36px;box-sizing:border-box}
+    .whd-file,.whd-select{padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text)}
+    .whd-header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.whd-filter-selects{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .whd-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 15px;border:0;border-radius:9px;background:#dc2626;color:#fff;font-weight:700;cursor:pointer;text-decoration:none}
     .whd-btn.secondary{background:#2563eb}.whd-btn.dark{background:#334155}
-    .whd-stats{display:grid;grid-template-columns:repeat(3,minmax(130px,1fr));gap:12px;margin-bottom:18px}
-    .whd-stat{padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
-    .whd-stat strong{display:block;font-size:24px;color:var(--text)}.whd-stat span{font-size:12px;color:var(--muted)}
     .whd-table-wrap{overflow:auto}.whd-table{width:100%;border-collapse:collapse;min-width:1200px}
     .whd-table th,.whd-table td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle;font-size:13px}
     .whd-table th{color:var(--muted);white-space:nowrap}.whd-thumb{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
@@ -24,7 +20,7 @@
     .import-dialog{width:min(480px,95vw);padding:24px;border:1px solid var(--border);border-radius:14px;background:var(--surface);box-shadow:0 25px 70px rgba(0,0,0,.45)}
     .import-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.import-title h3{margin:0;color:var(--text)}.import-x{border:0;background:transparent;color:var(--text);font-size:25px;cursor:pointer}.import-dialog .whd-file{display:block;width:100%;box-sizing:border-box;margin-bottom:15px}
     .js-pagination{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-top:18px}.pagination-info{font-size:13px;color:var(--muted)}.pagination-buttons{display:flex;gap:6px;align-items:center}.page-button{min-width:36px;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-weight:700;cursor:pointer}.page-button:hover:not(:disabled),.page-button.active{background:#2563eb;border-color:#2563eb;color:#fff}.page-button:disabled{opacity:.4;cursor:not-allowed}
-    @media(max-width:700px){.whd-stats{grid-template-columns:repeat(2,1fr)}.whd-actions form{width:100%}.whd-file{max-width:100%}}
+    @media(max-width:700px){.whd-header-actions,.whd-header-actions .whd-btn,.whd-filter-selects,.whd-select{width:100%}.whd-file{max-width:100%}}
 </style>
 @endpush
 
@@ -33,26 +29,27 @@
     @if(session('warning'))<div class="whd-alert warning">{{ session('warning') }}</div>@endif
     @if($errors->any())<div class="whd-alert error">{{ $errors->first() }}</div>@endif
 
-    <div class="whd-stats">
-        <div class="whd-stat"><strong>{{ number_format($summary['total']) }}</strong><span>Total imported</span></div>
-        <div class="whd-stat"><strong>{{ number_format($summary['photos']) }}</strong><span>S3 photos</span></div>
-        <div class="whd-stat"><strong>{{ number_format($summary['banners']) }}</strong><span>Ready banners</span></div>
-    </div>
-
     <div class="card">
-        <div class="whd-actions">
-            <button class="whd-btn" type="button" id="openImport"><i class="fas fa-file-import"></i> Import Excel</button>
-            <a class="whd-btn secondary" href="{{ route('admin.world-heart-day.export', request()->query()) }}"><i class="fas fa-file-excel"></i> Export Excel</a>
-            <a class="whd-btn dark" href="{{ route('admin.world-heart-day.download-banners', request()->query()) }}"><i class="fas fa-file-zipper"></i> Download Banner ZIP</a>
+        <div class="card-header">
+            <div><div class="card-title">World Heart Day Doctors</div><div class="card-sub">{{ number_format($entries->total()) }} Records Found</div></div>
+            <div class="whd-header-actions">
+                <button class="whd-btn" type="button" id="openImport"><i class="fas fa-file-import"></i> Import Excel</button>
+                <a class="whd-btn secondary" href="{{ route('admin.world-heart-day.export', request()->query()) }}"><i class="fas fa-file-excel"></i> Export Excel</a>
+                <a class="whd-btn dark" href="{{ route('admin.world-heart-day.download-banners', request()->query()) }}"><i class="fas fa-file-zipper"></i> Download Banner ZIP</a>
+            </div>
         </div>
 
-        <form class="whd-search" method="GET">
-            <div class="whd-search-box"><i class="fas fa-search"></i><input class="whd-input" name="search" value="{{ request('search') }}" placeholder="Search by doctor name, MSL, employee or speciality..." autocomplete="off"></div>
-            <select class="whd-select" name="speciality"><option value="">All specialities</option>@foreach($specialities as $speciality)<option value="{{ $speciality }}" @selected(request('speciality') === $speciality)>{{ $speciality }}</option>@endforeach</select>
-            <select class="whd-select" name="gender"><option value="">All genders</option><option value="Male" @selected(request('gender') === 'Male')>Male</option><option value="Female" @selected(request('gender') === 'Female')>Female</option></select>
-            <select class="whd-select" name="banner"><option value="">All banners</option><option value="ready" @selected(request('banner') === 'ready')>Banner ready</option><option value="pending" @selected(request('banner') === 'pending')>Banner pending</option></select>
-            <button class="whd-btn dark" type="submit"><i class="fas fa-search"></i> Search</button>
-            @if(request()->hasAny(['search','speciality','gender','banner']))<a class="whd-btn dark" href="{{ route('admin.world-heart-day.index') }}">Reset</a>@endif
+        <form method="GET">
+            <div class="filters-bar">
+                <div class="search-box"><i class="fas fa-search"></i><input name="search" value="{{ request('search') }}" placeholder="Search by doctor name, MSL, employee or speciality..." autocomplete="off"></div>
+                <div class="whd-filter-selects">
+                    <select class="whd-select" name="speciality"><option value="">All specialities</option>@foreach($specialities as $speciality)<option value="{{ $speciality }}" @selected(request('speciality') === $speciality)>{{ $speciality }}</option>@endforeach</select>
+                    <select class="whd-select" name="gender"><option value="">All genders</option><option value="Male" @selected(request('gender') === 'Male')>Male</option><option value="Female" @selected(request('gender') === 'Female')>Female</option></select>
+                    <select class="whd-select" name="banner"><option value="">All banners</option><option value="ready" @selected(request('banner') === 'ready')>Banner ready</option><option value="pending" @selected(request('banner') === 'pending')>Banner pending</option></select>
+                </div>
+                <button class="btn btn-primary" type="submit"><i class="fas fa-filter"></i> Filter</button>
+                @if(request()->hasAny(['search','speciality','gender','banner']))<a class="btn btn-ghost" href="{{ route('admin.world-heart-day.index') }}"><i class="fas fa-times"></i> Reset</a>@endif
+            </div>
         </form>
 
         <div class="whd-table-wrap">
@@ -87,7 +84,7 @@
                             @if($entry->banner_path)
                                 <div class="banner-actions">
                                     <button class="preview-trigger banner-btn" type="button" data-image="https://swarnimpolling.s3.ap-south-1.amazonaws.com/{{ $entry->banner_path }}" data-alt="{{ $entry->doctor_name }} banner"><i class="fas fa-eye"></i> Preview</button>
-                                    <form method="POST" action="{{ route('admin.world-heart-day.banner.delete', $entry) }}" onsubmit="return confirm('{{ $entry->doctor_name }} ka generated banner delete karein?');">
+                                    <form class="delete-banner-form" method="POST" action="{{ route('admin.world-heart-day.banner.delete', $entry) }}" data-doctor="{{ $entry->doctor_name }}">
                                         @csrf
                                         @method('DELETE')
                                         <button class="mini-btn delete-banner-btn" type="submit" title="Delete generated banner"><i class="fas fa-trash"></i> Delete</button>
@@ -129,6 +126,7 @@
         </div>
     </div>
     <div id="previewModal" class="preview-modal" aria-hidden="true"><button class="preview-close" type="button">&times;</button><img src="" alt=""></div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         (() => {
             const importModal = document.getElementById('importModal');
@@ -138,6 +136,19 @@
             importModal.addEventListener('click', event => { if(event.target === importModal) closeImport(); });
             document.querySelectorAll('#jsPagination [data-page-url]').forEach(button => button.addEventListener('click', () => {
                 if (!button.disabled && button.dataset.pageUrl) window.location.assign(button.dataset.pageUrl);
+            }));
+            document.querySelectorAll('.delete-banner-form').forEach(form => form.addEventListener('submit', event => {
+                event.preventDefault();
+                Swal.fire({
+                    title: 'Delete generated banner?',
+                    text: `${form.dataset.doctor || 'Doctor'} ka banner S3 se permanently delete ho jayega.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#475569',
+                    confirmButtonText: 'Yes, delete it',
+                    cancelButtonText: 'Cancel'
+                }).then(result => { if (result.isConfirmed) form.submit(); });
             }));
             const modal = document.getElementById('previewModal'); const image = modal.querySelector('img');
             const close = () => { modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); image.src=''; };

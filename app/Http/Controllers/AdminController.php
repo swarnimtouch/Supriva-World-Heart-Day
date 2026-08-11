@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Doctor;
+use App\Models\WorldHeartDayEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -16,9 +17,13 @@ class AdminController extends Controller
         $totalDoctors = Doctor::whereNotNull('speciality')->count();
         $specialities    = Doctor::distinct('speciality')->count('speciality');
         $recentDoctors   = Doctor::latest()->take(5)->get();
+        $worldHeartDayTotal = WorldHeartDayEntry::count();
+        $worldHeartDayPhotos = WorldHeartDayEntry::whereNotNull('photo_url')->count();
+        $worldHeartDayBanners = WorldHeartDayEntry::whereNotNull('banner_path')->count();
 
         return view('admin.dashboard', compact(
-            'totalDoctors', 'specialities',  'recentDoctors'
+            'totalDoctors', 'specialities', 'recentDoctors',
+            'worldHeartDayTotal', 'worldHeartDayPhotos', 'worldHeartDayBanners'
         ));
     }
 

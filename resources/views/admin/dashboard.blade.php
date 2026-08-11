@@ -50,6 +50,24 @@
             <div class="stat-label">Total Doctors</div>
         </div>
 
+        <div class="stat-card red">
+            <div class="stat-icon red"><i class="fas fa-heart-pulse"></i></div>
+            <div class="stat-value">{{ number_format($worldHeartDayTotal) }}</div>
+            <div class="stat-label">World Heart Day Records</div>
+        </div>
+
+        <div class="stat-card yellow">
+            <div class="stat-icon yellow"><i class="fas fa-images"></i></div>
+            <div class="stat-value">{{ number_format($worldHeartDayPhotos) }}</div>
+            <div class="stat-label">World Heart Day S3 Photos</div>
+        </div>
+
+        <div class="stat-card green">
+            <div class="stat-icon green"><i class="fas fa-panorama"></i></div>
+            <div class="stat-value">{{ number_format($worldHeartDayBanners) }}</div>
+            <div class="stat-label">World Heart Day Ready Banners</div>
+        </div>
+
     </div>
 
 @endsection

@@ -22,18 +22,13 @@ class WorldHeartDayController extends Controller
         $query = $this->filteredQuery($request);
 
         $entries = $query->orderByRaw('source_row is null, source_row')->paginate(100)->withQueryString();
-        $summary = [
-            'total' => WorldHeartDayEntry::count(),
-            'photos' => WorldHeartDayEntry::whereNotNull('photo_url')->count(),
-            'banners' => WorldHeartDayEntry::whereNotNull('banner_path')->count(),
-        ];
         $specialities = WorldHeartDayEntry::whereNotNull('speciality')
             ->where('speciality', '!=', '')
             ->distinct()
             ->orderBy('speciality')
             ->pluck('speciality');
 
-        return view('admin.world-heart-day.index', compact('entries', 'summary', 'specialities'));
+        return view('admin.world-heart-day.index', compact('entries', 'specialities'));
     }
 
     public function import(Request $request)
@@ -161,7 +156,10 @@ class WorldHeartDayController extends Controller
             return back()->with('warning', "{$entry->doctor_name} ka banner S3 se delete nahi ho paya. Please retry.");
         }
 
-        $entry->forceFill(['banner_path' => null])->save();
+        $entry->forceFill([
+            'banner_path' => null,
+            'gender' => null,
+        ])->save();
 
         return back()->with('success', "{$entry->doctor_name} ka generated banner delete ho gaya.");
     }

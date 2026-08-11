@@ -469,12 +469,7 @@
             <i class="fas fa-chart-pie"></i> Dashboard
         </a>
 
-        <div class="nav-label">Directory</div>
-        <a href="{{ route('admin.doctors.index') }}"
-           class="nav-item {{ request()->routeIs('admin.doctors.*') ? 'active' : '' }}"
-           onclick="closeSidebarOnMobile()">
-            <i class="fas fa-user-md"></i> Doctors
-        </a>
+        <div class="nav-label">Campaign</div>
         <a href="{{ route('admin.world-heart-day.index') }}"
            class="nav-item {{ request()->routeIs('admin.world-heart-day.*') ? 'active' : '' }}"
            onclick="closeSidebarOnMobile()">

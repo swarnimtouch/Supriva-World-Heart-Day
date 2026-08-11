@@ -8,7 +8,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\WorldHeartDayController;
 
 
-Route::get('/', [EmployeeLoginController::class, 'loginForm'])->name('login');
+Route::get('/', fn () => redirect()->route('admin.login'))->name('login');
+Route::get('/employee/login', [EmployeeLoginController::class, 'loginForm'])->name('employee.login.form');
 Route::post('/login', [EmployeeLoginController::class, 'login'])->name('employee.login');
 Route::middleware('auth:employee')->group(function () {
 

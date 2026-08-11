@@ -122,14 +122,14 @@ class DoctorBannerService
             throw new RuntimeException('Banner fonts are missing.');
         }
         $black = imagecolorallocate($banner, 0, 0, 0);
-        $name = $this->fitText($this->doctorNameWithPrefix($doctorName), $nameFont, 70, 1800);
-        $speciality = $this->fitText($doctorSpeciality ?: 'Doctor', $specialityFont, 55, 1800);
+        $name = $this->fitText($this->doctorNameWithPrefix($doctorName), $nameFont, 60, 1800);
+        $speciality = $this->fitText($doctorSpeciality ?: 'Doctor', $specialityFont, 45, 1800);
 
-        $nameX = $this->centeredX($name, $nameFont, 70, 0, 1860);
-        $specialityX = $this->centeredX($speciality, $specialityFont, 55, 0, 1860);
+        $nameX = $this->centeredX($name, $nameFont, 60, 0, 1860);
+        $specialityX = $this->centeredX($speciality, $specialityFont, 45, 0, 1860);
 
-        imagettftext($banner, 70, 0, $nameX, 2470, $black, $nameFont, $name);
-        imagettftext($banner, 55, 0, $specialityX, 2570, $black, $specialityFont, $speciality);
+        imagettftext($banner, 60, 0, $nameX, 2500, $black, $nameFont, $name);
+        imagettftext($banner, 45, 0, $specialityX, 2600, $black, $specialityFont, $speciality);
     }
 
     private function doctorNameWithPrefix(string $doctorName): string

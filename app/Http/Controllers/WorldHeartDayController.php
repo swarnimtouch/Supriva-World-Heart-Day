@@ -83,7 +83,6 @@ class WorldHeartDayController extends Controller
 
         $added = 0;
         $stagedFiles = [];
-        $employeeFolders = [];
         foreach ($entries as $entry) {
             try {
                 $stream = Storage::disk('s3')->readStream($entry->banner_path);
@@ -95,19 +94,13 @@ class WorldHeartDayController extends Controller
             }
 
             $employeeFolder = $this->safeName(($entry->employee_code ?: 'unknown') . '_' . ($entry->employee_name ?: 'employee'));
-            if (!isset($employeeFolders[$employeeFolder])) {
-                $zip->addEmptyDir("{$employeeFolder}/banners/Male");
-                $zip->addEmptyDir("{$employeeFolder}/banners/Female");
-                $employeeFolders[$employeeFolder] = true;
-            }
-            $genderFolder = $entry->gender === 'Female' ? 'Female' : 'Male';
             $doctorFile = $this->safeName($entry->doctor_name ?: 'doctor') . '_' . $entry->msl_code . '.png';
             $localPath = $directory . DIRECTORY_SEPARATOR . Str::uuid() . '.png';
             $output = fopen($localPath, 'wb');
             stream_copy_to_stream($stream, $output);
             fclose($stream);
             fclose($output);
-            $zip->addFile($localPath, "{$employeeFolder}/banners/{$genderFolder}/{$doctorFile}");
+            $zip->addFile($localPath, "{$employeeFolder}/{$doctorFile}");
             $stagedFiles[] = $localPath;
             $added++;
         }

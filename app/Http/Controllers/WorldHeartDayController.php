@@ -137,6 +137,32 @@ class WorldHeartDayController extends Controller
         );
     }
 
+    public function downloadBanner(WorldHeartDayEntry $entry)
+    {
+        if (!$entry->banner_path) {
+            return back()->with('warning', "No generated banner is available for {$entry->doctor_name}.");
+        }
+
+        try {
+            $stream = Storage::disk('s3')->readStream($entry->banner_path);
+        } catch (Throwable) {
+            $stream = false;
+        }
+
+        if (!is_resource($stream)) {
+            return back()->with('warning', "The banner for {$entry->doctor_name} could not be downloaded from S3.");
+        }
+
+        $filename = $this->safeName($entry->doctor_name ?: 'doctor')
+            . ($entry->msl_code ? '_' . $this->safeName($entry->msl_code) : '')
+            . '_banner.png';
+
+        return response()->streamDownload(function () use ($stream) {
+            fpassthru($stream);
+            fclose($stream);
+        }, $filename, ['Content-Type' => 'image/png']);
+    }
+
     public function deleteBanner(WorldHeartDayEntry $entry)
     {
         if (!$entry->banner_path) {

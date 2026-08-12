@@ -16,6 +16,8 @@ The doctor reference photo may show the face turned toward the left or right. Co
 Follow the face direction and head pose already present in the campaign banner, not the direction or camera angle of the doctor reference photo.
 Keep both eyes naturally aligned and visible, preserve realistic facial symmetry and proportions, and do not produce a tilted, side-facing, stretched, or distorted face.
 Match the template head angle, lighting, focus, scale, perspective, and photorealistic style so the result is seamless.
+Keep the head and face at the exact size and proportions of the person in the campaign banner. Do not enlarge or widen the head to match the doctor reference photo.
+Preserve a natural visible neck between the jawline and shirt collar. Keep the jaw-to-neck transition anatomically correct and avoid a short, compressed, thick, or missing neck.
 Do not modify anything outside the masked face area. Keep the exact canvas, background, headline, body, pose, hair outside the mask, clothing, chair, hands, blood-pressure cuff, table, medical device, colors, and composition unchanged.
 Do not add any new text, logos, objects, borders, or watermarks.
 PROMPT;
@@ -87,9 +89,9 @@ PROMPT;
         imagefilledrectangle($mask, 0, 0, 1859, 2699, $opaque);
 
         if (strtolower(trim($gender)) === 'female') {
-            imagefilledellipse($mask, 650, 790, 360, 440, $transparent);
+            imagefilledellipse($mask, 650, 770, 340, 410, $transparent);
         } else {
-            imagefilledellipse($mask, 660, 785, 350, 430, $transparent);
+            imagefilledellipse($mask, 660, 765, 330, 400, $transparent);
         }
 
         ob_start();

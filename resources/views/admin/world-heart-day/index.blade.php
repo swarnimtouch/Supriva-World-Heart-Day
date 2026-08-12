@@ -14,7 +14,7 @@
     .whd-table th,.whd-table td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle;font-size:13px}
     .whd-table th{color:var(--muted);white-space:nowrap}.whd-thumb{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
     .preview-trigger{border:0;background:transparent;padding:0;cursor:pointer}.banner-btn{padding:7px 11px;border:0;border-radius:8px;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer}
-    .gender-form,.banner-actions{display:flex;gap:5px;align-items:center}.gender-form select{padding:6px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text)}.mini-btn{padding:6px 8px;border:0;border-radius:7px;background:#0f766e;color:#fff;cursor:pointer}.delete-banner-btn{background:#dc2626}
+    .gender-form,.banner-actions{display:flex;gap:5px;align-items:center}.gender-form select{padding:6px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text)}.mini-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border:0;border-radius:7px;background:#0f766e;color:#fff;cursor:pointer;text-decoration:none;white-space:nowrap}.download-banner-btn{background:#2563eb}.delete-banner-btn{background:#dc2626}
     .whd-alert{padding:12px 16px;border-radius:9px;margin-bottom:14px}.success{background:#dcfce7;color:#166534}.warning{background:#fef3c7;color:#92400e}.error{background:#fee2e2;color:#991b1b}
     .preview-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(2,6,23,.9)}.preview-modal.open{display:flex}
     .preview-modal img{max-width:94vw;max-height:88vh;border-radius:10px}.preview-close{position:fixed;top:20px;right:25px;background:#fff;border:0;border-radius:50%;width:40px;height:40px;font-size:25px;cursor:pointer}
@@ -102,6 +102,7 @@
                             @if($entry->banner_path)
                                 <div class="banner-actions">
                                     <button class="preview-trigger banner-btn" type="button" data-image="https://swarnimpolling.s3.ap-south-1.amazonaws.com/{{ $entry->banner_path }}" data-alt="{{ $entry->doctor_name }} banner"><i class="fas fa-eye"></i> Preview</button>
+                                    <a class="mini-btn download-banner-btn" href="{{ route('admin.world-heart-day.banner.download', $entry) }}" title="Download generated banner"><i class="fas fa-download"></i> Download</a>
                                     <form class="delete-banner-form" method="POST" action="{{ route('admin.world-heart-day.banner.delete', $entry) }}" data-doctor="{{ $entry->doctor_name }}">
                                         @csrf
                                         @method('DELETE')

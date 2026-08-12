@@ -46,6 +46,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         ->name('world-heart-day.download-banners');
     Route::post('/world-heart-day/{entry}/gender', [WorldHeartDayController::class, 'updateGender'])
         ->name('world-heart-day.gender');
+    Route::get('/world-heart-day/{entry}/banner/download', [WorldHeartDayController::class, 'downloadBanner'])
+        ->name('world-heart-day.banner.download');
     Route::delete('/world-heart-day/{entry}/banner', [WorldHeartDayController::class, 'deleteBanner'])
         ->name('world-heart-day.banner.delete');
 });

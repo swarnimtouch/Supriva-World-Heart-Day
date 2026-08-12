@@ -165,7 +165,7 @@ class AdminController extends Controller
         }
 
         if (!(clone $query)->exists()) {
-            return back()->with('error', 'Koi photo ya banner available nahi hai.');
+            return back()->with('error', 'No photos or banners are available.');
         }
 
         $zipFileName = 'doctors_photos_and_banners_' . now()->format('Ymd_His') . '.zip';
@@ -179,7 +179,7 @@ class AdminController extends Controller
         $zip = new ZipArchive();
         if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             File::deleteDirectory($exportDirectory);
-            return back()->with('error', 'Zip file create nahi ho payi.');
+            return back()->with('error', 'The ZIP file could not be created.');
         }
 
         $added = 0;
@@ -225,11 +225,11 @@ class AdminController extends Controller
                             $destination = fopen($stagedPath, 'wb');
 
                             if (!is_resource($source) || $destination === false) {
-                                throw new \RuntimeException('S3 stream open nahi ho paya.');
+                        throw new \RuntimeException('The S3 stream could not be opened.');
                             }
 
                             if (stream_copy_to_stream($source, $destination) === false) {
-                                throw new \RuntimeException('S3 stream copy nahi ho paya.');
+                        throw new \RuntimeException('The S3 stream could not be copied.');
                             }
 
                             $extension = strtolower(pathinfo($s3Path, PATHINFO_EXTENSION));
@@ -239,7 +239,7 @@ class AdminController extends Controller
                             $zipPath = $folderName . '/' . $assetFolder . '/' . $fileName;
 
                             if (!$zip->addFile($stagedPath, $zipPath)) {
-                                throw new \RuntimeException('Image ZIP me add nahi ho payi.');
+                    throw new \RuntimeException('The image could not be added to the ZIP file.');
                             }
 
                             $added++;
@@ -268,7 +268,7 @@ class AdminController extends Controller
             $zipIsOpen = false;
 
             if (!$closed) {
-                throw new \RuntimeException('ZIP finalize nahi ho payi.');
+                throw new \RuntimeException('The ZIP file could not be finalized.');
             }
         } catch (\Throwable $e) {
             if ($zipIsOpen) {
@@ -281,7 +281,7 @@ class AdminController extends Controller
             File::deleteDirectory($exportDirectory);
             Log::error('Doctor photo export failed.', ['error' => $e->getMessage()]);
 
-            return back()->with('error', 'Photos aur banners ZIP create nahi ho payi. Please dobara try karein.');
+            return back()->with('error', 'The photos and banners ZIP file could not be created. Please try again.');
         }
 
         // ZipArchive needs staged files until close(); they can now be removed.
@@ -290,7 +290,7 @@ class AdminController extends Controller
         if ($added === 0) {
             File::deleteDirectory($exportDirectory);
 
-            return back()->with('error', 'S3 se koi photo ya banner download nahi ho paya. Logs check karein.');
+            return back()->with('error', 'No photos or banners could be downloaded from S3. Please check the logs.');
         }
 
         Log::info('Doctor photo and banner export completed.', compact('added', 'skipped'));

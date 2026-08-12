@@ -3,11 +3,13 @@
 @section('page-title', 'World Heart Day Campaign')
 
 @push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 <style>
     .whd-file,.whd-select{padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--text)}
     .whd-header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.whd-filter-selects{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .whd-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 15px;border:0;border-radius:9px;background:#dc2626;color:#fff;font-weight:700;cursor:pointer;text-decoration:none}
     .whd-btn.secondary{background:#2563eb}.whd-btn.dark{background:#334155}
+    .employee-select-wrap{min-width:260px}.employee-select-wrap .select2-container{width:100%!important}.employee-select-wrap .select2-selection--single{height:38px!important;border:1px solid var(--border)!important;border-radius:9px!important;background:var(--surface)!important}.employee-select-wrap .select2-selection__rendered{line-height:36px!important;color:var(--text)!important;padding-left:12px!important}.employee-select-wrap .select2-selection__arrow{height:36px!important}.select2-dropdown{border-color:var(--border)!important;background:var(--surface)!important;color:var(--text)!important}.select2-search__field{border:1px solid var(--border)!important;border-radius:6px;background:var(--surface)!important;color:var(--text)!important}.select2-results__option--highlighted.select2-results__option--selectable{background:#2563eb!important}
     .whd-table-wrap{overflow:auto}.whd-table{width:100%;border-collapse:collapse;min-width:1200px}
     .whd-table th,.whd-table td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle;font-size:13px}
     .whd-table th{color:var(--muted);white-space:nowrap}.whd-thumb{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
@@ -20,11 +22,20 @@
     .import-dialog{width:min(480px,95vw);padding:24px;border:1px solid var(--border);border-radius:14px;background:var(--surface);box-shadow:0 25px 70px rgba(0,0,0,.45)}
     .import-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.import-title h3{margin:0;color:var(--text)}.import-x{border:0;background:transparent;color:var(--text);font-size:25px;cursor:pointer}.import-dialog .whd-file{display:block;width:100%;box-sizing:border-box;margin-bottom:15px}
     .js-pagination{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-top:18px}.pagination-info{font-size:13px;color:var(--muted)}.pagination-buttons{display:flex;gap:6px;align-items:center}.page-button{min-width:36px;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-weight:700;cursor:pointer}.page-button:hover:not(:disabled),.page-button.active{background:#2563eb;border-color:#2563eb;color:#fff}.page-button:disabled{opacity:.4;cursor:not-allowed}
+    .banner-loader{position:fixed;inset:0;z-index:10050;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.88);backdrop-filter:blur(3px)}.banner-loader.active{display:flex}.banner-loader-box{min-width:280px;padding:30px 34px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:#0f172a;color:#fff;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.45)}.banner-loader-spinner{width:48px;height:48px;margin:0 auto 18px;border:4px solid rgba(255,255,255,.2);border-top-color:#38bdf8;border-radius:50%;animation:banner-spin .8s linear infinite}.banner-loader-title{font-size:17px;font-weight:800}.banner-loader-text{margin-top:7px;color:#cbd5e1;font-size:13px}@keyframes banner-spin{to{transform:rotate(360deg)}}
     @media(max-width:700px){.whd-header-actions,.whd-header-actions .whd-btn,.whd-filter-selects,.whd-select{width:100%}.whd-file{max-width:100%}}
 </style>
 @endpush
 
 @section('content')
+    <div id="bannerLoader" class="banner-loader active" role="status" aria-live="polite" aria-label="Generating banner">
+        <div class="banner-loader-box">
+            <div class="banner-loader-spinner"></div>
+            <div class="banner-loader-title">Please wait</div>
+            <div class="banner-loader-text">The banner is being generated...</div>
+        </div>
+    </div>
+
     @if(session('success'))<div class="whd-alert success">{{ session('success') }}</div>@endif
     @if(session('warning'))<div class="whd-alert warning">{{ session('warning') }}</div>@endif
     @if($errors->any())<div class="whd-alert error">{{ $errors->first() }}</div>@endif
@@ -41,14 +52,21 @@
 
         <form method="GET">
             <div class="filters-bar">
-                <div class="search-box"><i class="fas fa-search"></i><input name="search" value="{{ request('search') }}" placeholder="Search by doctor name, MSL, employee or speciality..." autocomplete="off"></div>
+                <div class="search-box"><i class="fas fa-search"></i><input name="search" value="{{ request('search') }}" placeholder="Search by doctor name or MSL code..." autocomplete="off"></div>
                 <div class="whd-filter-selects">
-                    <select class="whd-select" name="speciality"><option value="">All specialities</option>@foreach($specialities as $speciality)<option value="{{ $speciality }}" @selected(request('speciality') === $speciality)>{{ $speciality }}</option>@endforeach</select>
+                    <div class="employee-select-wrap">
+                        <select id="employeeFilter" class="whd-select" name="employee">
+                            <option value="">All employees</option>
+                            @foreach($employees as $employee)
+                                <option value="{{ $employee->employee_code }}" @selected((string) request('employee') === (string) $employee->employee_code)>{{ $employee->employee_name ?: 'Employee' }} ({{ $employee->employee_code }})</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <select class="whd-select" name="gender"><option value="">All genders</option><option value="Male" @selected(request('gender') === 'Male')>Male</option><option value="Female" @selected(request('gender') === 'Female')>Female</option></select>
                     <select class="whd-select" name="banner"><option value="">All banners</option><option value="ready" @selected(request('banner') === 'ready')>Banner ready</option><option value="pending" @selected(request('banner') === 'pending')>Banner pending</option></select>
                 </div>
                 <button class="btn btn-primary" type="submit"><i class="fas fa-filter"></i> Filter</button>
-                @if(request()->hasAny(['search','speciality','gender','banner']))<a class="btn btn-ghost" href="{{ route('admin.world-heart-day.index') }}"><i class="fas fa-times"></i> Reset</a>@endif
+                @if(request()->hasAny(['search','employee','gender','banner']))<a class="btn btn-ghost" href="{{ route('admin.world-heart-day.index') }}"><i class="fas fa-times"></i> Reset</a>@endif
             </div>
         </form>
 
@@ -96,7 +114,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="9" style="text-align:center;padding:35px;color:var(--muted)">No records found. Search/filter clear karein ya Excel import karein.</td></tr>
+                    <tr><td colspan="9" style="text-align:center;padding:35px;color:var(--muted)">No records found. Clear the search filters or import an Excel file.</td></tr>
                 @endforelse
                 </tbody>
             </table>
@@ -127,8 +145,21 @@
     </div>
     <div id="previewModal" class="preview-modal" aria-hidden="true"><button class="preview-close" type="button">&times;</button><img src="" alt=""></div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         (() => {
+            $('#employeeFilter').select2({
+                placeholder: 'Search employee name or code',
+                allowClear: true,
+                width: '100%'
+            });
+            const bannerLoader = document.getElementById('bannerLoader');
+            const showBannerLoader = () => bannerLoader.classList.add('active');
+            const hideBannerLoader = () => bannerLoader.classList.remove('active');
+            window.addEventListener('load', () => window.setTimeout(hideBannerLoader, 250));
+            window.addEventListener('pageshow', event => { if (event.persisted) hideBannerLoader(); });
+            document.querySelectorAll('.gender-form').forEach(form => form.addEventListener('submit', showBannerLoader));
             const importModal = document.getElementById('importModal');
             const closeImport = () => { importModal.classList.remove('open'); importModal.setAttribute('aria-hidden','true'); };
             document.getElementById('openImport').addEventListener('click', () => { importModal.classList.add('open'); importModal.setAttribute('aria-hidden','false'); });
@@ -141,7 +172,7 @@
                 event.preventDefault();
                 Swal.fire({
                     title: 'Delete generated banner?',
-                    text: `${form.dataset.doctor || 'Doctor'} ka banner S3 se permanently delete ho jayega.`,
+                    text: `The generated banner for ${form.dataset.doctor || 'this doctor'} will be permanently deleted from S3. The selected gender will also be cleared.`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#dc2626',

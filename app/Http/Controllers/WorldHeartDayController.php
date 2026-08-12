@@ -22,13 +22,16 @@ class WorldHeartDayController extends Controller
         $query = $this->filteredQuery($request);
 
         $entries = $query->orderByRaw('source_row is null, source_row')->paginate(100)->withQueryString();
-        $specialities = WorldHeartDayEntry::whereNotNull('speciality')
-            ->where('speciality', '!=', '')
+        $employees = WorldHeartDayEntry::query()
+            ->whereNotNull('employee_code')
+            ->where('employee_code', '!=', '')
+            ->select('employee_code', 'employee_name')
             ->distinct()
-            ->orderBy('speciality')
-            ->pluck('speciality');
+            ->orderBy('employee_name')
+            ->orderBy('employee_code')
+            ->get();
 
-        return view('admin.world-heart-day.index', compact('entries', 'specialities'));
+        return view('admin.world-heart-day.index', compact('entries', 'employees'));
     }
 
     public function import(Request $request)
@@ -68,7 +71,7 @@ class WorldHeartDayController extends Controller
             ->get();
 
         if ($entries->isEmpty()) {
-            return back()->with('warning', 'Selected records mein koi banner available nahi hai.');
+            return back()->with('warning', 'No banners are available for the selected records.');
         }
 
         $directory = storage_path('app/temp/world-heart-day/' . Str::uuid());
@@ -78,7 +81,7 @@ class WorldHeartDayController extends Controller
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             File::deleteDirectory($directory);
-            return back()->with('warning', 'Banner ZIP create nahi ho payi.');
+            return back()->with('warning', 'The banner ZIP file could not be created.');
         }
 
         $added = 0;
@@ -109,7 +112,7 @@ class WorldHeartDayController extends Controller
         File::delete($stagedFiles);
         if ($added === 0) {
             File::deleteDirectory($directory);
-            return back()->with('warning', 'S3 se koi banner download nahi ho paya.');
+            return back()->with('warning', 'No banners could be downloaded from S3.');
         }
 
         return response()->download($zipPath)->deleteFileAfterSend(true);
@@ -121,6 +124,7 @@ class WorldHeartDayController extends Controller
         DoctorBannerService $bannerService
     )
     {
+        set_time_limit(max(60, (int) config('services.openai_images.timeout', 180) + 30));
         $validated = $request->validate(['gender' => ['required', 'in:Male,Female']]);
         $entry->update($validated);
         $path = $bannerService->generateCampaign($entry->fresh());
@@ -136,7 +140,7 @@ class WorldHeartDayController extends Controller
     public function deleteBanner(WorldHeartDayEntry $entry)
     {
         if (!$entry->banner_path) {
-            return back()->with('warning', "{$entry->doctor_name} ka generated banner available nahi hai.");
+            return back()->with('warning', "No generated banner is available for {$entry->doctor_name}.");
         }
 
         try {
@@ -146,7 +150,7 @@ class WorldHeartDayController extends Controller
         }
 
         if (!$deleted) {
-            return back()->with('warning', "{$entry->doctor_name} ka banner S3 se delete nahi ho paya. Please retry.");
+            return back()->with('warning', "The banner for {$entry->doctor_name} could not be deleted from S3. Please try again.");
         }
 
         $entry->forceFill([
@@ -154,7 +158,7 @@ class WorldHeartDayController extends Controller
             'gender' => null,
         ])->save();
 
-        return back()->with('success', "{$entry->doctor_name} ka generated banner delete ho gaya.");
+        return back()->with('success', "The generated banner for {$entry->doctor_name} was deleted successfully.");
     }
 
     private function filteredQuery(Request $request): Builder
@@ -166,18 +170,15 @@ class WorldHeartDayController extends Controller
             $query->where(function ($q) use ($term) {
                 $like = '%' . addcslashes($term, '%_\\') . '%';
                 $q->where('doctor_name', 'like', $like)
-                    ->orWhere('msl_code', 'like', $like)
-                    ->orWhere('employee_name', 'like', $like)
-                    ->orWhere('employee_code', 'like', $like)
-                    ->orWhere('speciality', 'like', $like);
+                    ->orWhere('msl_code', 'like', $like);
             });
         }
 
         if ($request->filled('gender')) {
             $query->where('gender', $request->gender);
         }
-        if ($request->filled('speciality')) {
-            $query->where('speciality', $request->speciality);
+        if ($request->filled('employee')) {
+            $query->where('employee_code', $request->employee);
         }
         if ($request->input('banner') === 'ready') {
             $query->whereNotNull('banner_path');

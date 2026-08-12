@@ -11,6 +11,10 @@ use Throwable;
 
 class DoctorBannerService
 {
+    public function __construct(private readonly OpenAiFaceSwapService $faceSwapService)
+    {
+    }
+
     public function generate(Doctor $doctor): ?string
     {
         return $this->generateBanner(
@@ -21,6 +25,7 @@ class DoctorBannerService
             "employee_" . ($doctor->employee?->employee_code ?? 'emp_' . $doctor->employee_id) . '_' .
                 str($doctor->employee?->name ?: 'employee')->slug('_')->value(),
             $doctor->id,
+            $doctor->photo ? Storage::disk('s3')->url($doctor->photo) : null,
             fn (string $path) => $doctor->forceFill(['banner_path' => $path])->saveQuietly(),
             ['doctor_id' => $doctor->id]
         );
@@ -38,6 +43,7 @@ class DoctorBannerService
             $entry->banner_path,
             "world_heart_day/employee_{$employeeCode}_{$employeeName}",
             $entry->id,
+            $entry->photo_url,
             fn (string $path) => $entry->forceFill(['banner_path' => $path])->saveQuietly(),
             ['world_heart_day_entry_id' => $entry->id]
         );
@@ -50,6 +56,7 @@ class DoctorBannerService
         ?string $oldBanner,
         string $directory,
         int $recordId,
+        ?string $doctorPhotoUrl,
         callable $savePath,
         array $logContext
     ): ?string {
@@ -74,11 +81,22 @@ class DoctorBannerService
                 throw new RuntimeException("Banner template not found: {$templateName}");
             }
 
-            $template = imagecreatefrompng($templatePath);
+            if ($this->faceSwapService->enabled() && !$doctorPhotoUrl) {
+                throw new RuntimeException('Doctor photo is required for face swap.');
+            }
+
+            $sourceContents = $this->faceSwapService->swap(
+                $templatePath,
+                (string) $doctorPhotoUrl,
+                (string) $gender
+            );
+            $template = imagecreatefromstring($sourceContents);
 
             if (!$template) {
-                throw new RuntimeException('The banner template could not be read.');
+                throw new RuntimeException('The face-swapped banner could not be read.');
             }
+
+            $template = $this->normalizeCanvas($template, 1860, 2700);
 
             $this->placeText($template, $doctorName, $speciality);
 
@@ -130,6 +148,30 @@ class DoctorBannerService
 
         imagettftext($banner, 60, 0, $nameX, 2500, $black, $nameFont, $name);
         imagettftext($banner, 45, 0, $specialityX, 2600, $black, $specialityFont, $speciality);
+    }
+
+    private function normalizeCanvas(\GdImage $source, int $width, int $height): \GdImage
+    {
+        if (imagesx($source) === $width && imagesy($source) === $height) {
+            return $source;
+        }
+
+        $canvas = imagecreatetruecolor($width, $height);
+        imagecopyresampled(
+            $canvas,
+            $source,
+            0,
+            0,
+            0,
+            0,
+            $width,
+            $height,
+            imagesx($source),
+            imagesy($source)
+        );
+        imagedestroy($source);
+
+        return $canvas;
     }
 
     private function doctorNameWithPrefix(string $doctorName): string

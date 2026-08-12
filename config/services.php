@@ -22,6 +22,15 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'openai_images' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'base_url' => rtrim(env('OPENAI_BASE_URL', 'https://api.openai.com/v1'), '/'),
+        'model' => env('OPENAI_IMAGE_MODEL', 'gpt-image-2'),
+        'quality' => env('OPENAI_IMAGE_QUALITY', 'low'),
+        'timeout' => (int) env('OPENAI_IMAGE_TIMEOUT', 180),
+        'enabled' => filter_var(env('OPENAI_BANNER_ENABLED', false), FILTER_VALIDATE_BOOL),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

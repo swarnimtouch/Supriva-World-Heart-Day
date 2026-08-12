@@ -12,7 +12,10 @@ class OpenAiFaceSwapService
 The first image is the locked campaign banner template. The second image is the doctor identity reference.
 Replace only the face inside the transparent mask with the same identifiable face from the doctor reference.
 Preserve the doctor's facial identity, apparent age, facial structure, eyes, nose, mouth, skin tone, hairline, and natural expression.
-Match the template head angle, lighting, focus, and photorealistic style so the result is seamless.
+The doctor reference photo may show the face turned toward the left or right. Correct that angle and reconstruct the same person's face in a straight, front-facing view looking naturally toward the camera.
+Follow the face direction and head pose already present in the campaign banner, not the direction or camera angle of the doctor reference photo.
+Keep both eyes naturally aligned and visible, preserve realistic facial symmetry and proportions, and do not produce a tilted, side-facing, stretched, or distorted face.
+Match the template head angle, lighting, focus, scale, perspective, and photorealistic style so the result is seamless.
 Do not modify anything outside the masked face area. Keep the exact canvas, background, headline, body, pose, hair outside the mask, clothing, chair, hands, blood-pressure cuff, table, medical device, colors, and composition unchanged.
 Do not add any new text, logos, objects, borders, or watermarks.
 PROMPT;
